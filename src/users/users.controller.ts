@@ -7,9 +7,17 @@ import {
   Param,
   Delete,
   NotFoundException,
+  HttpException,
+  HttpStatus,
+  ParseIntPipe,
+  UsePipes,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { User } from './users.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { InterceptInterceptor } from 'src/intercept/intercept.interceptor';
 
 @Controller('users')
 export class UsersController {
@@ -17,13 +25,22 @@ export class UsersController {
 
   //get all users
   @Get()
+  // @UseGuards(AuthGuard)
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   //get user by id
   @Get(':id')
+  @UseInterceptors(InterceptInterceptor)
+  @UsePipes(ParseIntPipe)
   async findOne(@Param('id') id: number): Promise<User> {
+    if (id < 0) {
+      throw new HttpException(
+        'Id must be greater than zero',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException('User does not exist!');
