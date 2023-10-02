@@ -21,8 +21,9 @@ export class AuthService {
       id: findedUser.id,
       email: findedUser.email,
       password: findedUser.password,
+      role: findedUser?.role,
       access_token: await this.jwtService.signAsync({
-        email: findedUser.email,
+        role: findedUser.role,
       }),
     };
     return user;
